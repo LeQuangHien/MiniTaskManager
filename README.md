@@ -36,6 +36,7 @@ _(Remember to replace the placeholder paths above with actual paths to your scre
 *   **Android Architecture Components:**
     *   **ViewModel:** Manages UI-related data and handles lifecycle events.
     *   **LiveData** and **StateFlow:** Observables data holders to update the UI.
+    *   **Room**: Local persistence using the Room library.
 *   **Coroutines:** For managing asynchronous tasks.
 *   **Material Design 3:** For consistent and modern UI elements.
 * **Lottie Compose**: For animation.
