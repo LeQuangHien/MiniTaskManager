@@ -17,17 +17,6 @@ A simple yet powerful task management application built with Jetpack Compose for
 *   **Dark Mode:** Enjoy a comfortable viewing experience with the app's dark mode.
 *   **Empty State:** A friendly empty state message guides users to add their first task.
 
-## Screenshots
-
-<!-- You can add screenshots here using the following format: -->
-
-<!--
-<img src="screenshots/screenshot1.png" width="300" alt="Screenshot 1">
-<img src="screenshots/screenshot2.png" width="300" alt="Screenshot 2">
--->
-
-_(Remember to replace the placeholder paths above with actual paths to your screenshots.)_
-
 ## Technologies Used
 
 *   **Jetpack Compose:** Modern UI toolkit for building native Android UIs.
@@ -35,7 +24,7 @@ _(Remember to replace the placeholder paths above with actual paths to your scre
 *   **Koin:** Dependency injection framework for managing dependencies.
 *   **Android Architecture Components:**
     *   **ViewModel:** Manages UI-related data and handles lifecycle events.
-    *   **LiveData** and **StateFlow:** Observables data holders to update the UI.
+    *   **StateFlow:** Observables data holders to update the UI.
     *   **Room**: Local persistence using the Room library.
 *   **Coroutines:** For managing asynchronous tasks.
 *   **Material Design 3:** For consistent and modern UI elements.
@@ -55,3 +44,21 @@ _(Remember to replace the placeholder paths above with actual paths to your scre
 4.  **Build and Run:**
     *   Connect an Android device or start an emulator.
     *   Click the "Run" button (green play icon) to build and run the app on your device or emulator.
+
+## How to Contribute
+
+Contributions to the **Mini Task Manager** are welcome!
+
+## License
+
+This project is licensed under the MIT License.
+
+## Contact
+
+If you have any questions, suggestions, or feedback, feel free to open an issue or contact me!
+
+
+
+
+
+
