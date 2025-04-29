@@ -38,9 +38,10 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun TaskScreen(modifier: Modifier = Modifier, viewModel: TaskViewModel = koinViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val tasks by viewModel.tasks.collectAsStateWithLifecycle()
     TaskScreenScaffold(
         modifier = modifier,
-        tasks = state.tasks,
+        tasks = tasks,
         deletedTask = state.deletedTask,
         isUndoShown = state.isUndoShown,
         onCheckedChange = { taskId, checked -> viewModel.onTaskCheckedChange(taskId, checked) },
@@ -102,7 +103,7 @@ fun TaskScreenScaffold(
         )
 
         if (deletedTask != null && isUndoShown) {
-            LaunchedEffect(Unit) {
+            LaunchedEffect(deletedTask.taskId) {
                 val snackbarResult = snackbarHostState.showSnackbar(
                     message = "Task deleted",
                     actionLabel = "Undo",
@@ -177,8 +178,8 @@ fun TaskItemPreview() {
 @Composable
 fun TaskListPreview() {
     val tasks = listOf(
-        Task(taskId = 1, title = "Task 1", checked = false),
-        Task(taskId = 2, title = "Task 2", checked = true)
+        Task(taskId = 1, title = "Task 1", description = "Description 1", checked = false),
+        Task(taskId = 2, title = "Task 2", description = "Description 2", checked = true)
     )
     TaskList(tasks = tasks, onCheckedChange = { _, _ -> }, onDelete = {})
 }
@@ -188,8 +189,8 @@ fun TaskListPreview() {
 @Composable
 fun TaskScreenScaffoldPreview() {
     val tasks = listOf(
-        Task(taskId = 1, title = "Task 1", checked = false),
-        Task(taskId = 2, title = "Task 2", checked = true)
+        Task(taskId = 1, title = "Task 1", description = "Description 1", checked = false),
+        Task(taskId = 2, title = "Task 2", description = "Description 2", checked = true)
     )
     TaskScreenScaffold(
         tasks = tasks,

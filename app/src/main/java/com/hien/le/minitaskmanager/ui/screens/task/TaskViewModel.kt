@@ -1,16 +1,23 @@
 package com.hien.le.minitaskmanager.ui.screens.task
 
-import androidx.activity.result.launch
-import androidx.compose.animation.core.copy
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.hien.le.minitaskmanager.data.datasource.database.entity.TaskEntity
+import com.hien.le.minitaskmanager.data.repository.TaskRepository
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class TaskScreenState(
-    val tasks: List<Task> = emptyList(),
     val deletedTask: Task? = null,
     val isUndoShown: Boolean = false,
 )
@@ -18,53 +25,72 @@ data class TaskScreenState(
 data class Task(
     val taskId: Int,
     val title: String,
+    val description: String,
     val checked: Boolean
 )
 
-class TaskViewModel : ViewModel() {
+class TaskViewModel(
+    private val taskRepository: TaskRepository,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
+) : ViewModel() {
+
+    val tasks: StateFlow<List<Task>> = taskRepository.getAllTasks()
+        .distinctUntilChanged()
+        .map { taskEntities ->
+            taskEntities.map { taskEntity ->
+                taskEntity.toTask()
+            }
+        }
+        .flowOn(ioDispatcher)
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
     private val _state = MutableStateFlow(TaskScreenState())
     val state = _state.asStateFlow()
 
     private var taskIdCounter = 0
 
     fun onTaskCheckedChange(taskId: Int, checked: Boolean) {
-        _state.value = _state.value.copy(
-            tasks = _state.value.tasks.map {
-                if (it.taskId == taskId) {
-                    it.copy(checked = checked)
-                } else {
-                    it
-                }
-            })
+        viewModelScope.launch(ioDispatcher) {
+            taskRepository.updateTaskIsCompleted(taskId, checked)
+        }
     }
 
     fun onTaskAdd() {
-        viewModelScope.launch {
-            taskIdCounter++
-            val newTask = Task(taskId = taskIdCounter, title = "Task $taskIdCounter", checked = false)
-            _state.update { it.copy(tasks = it.tasks + newTask) }
+        viewModelScope.launch(ioDispatcher) {
+            val taskId = taskIdCounter++
+            taskRepository.insertTask("Task $taskId", "Description $taskId")
         }
     }
 
     fun onDeleteTask(taskId: Int) {
-        viewModelScope.launch {
-            val taskToDelete = _state.value.tasks.first { it.taskId == taskId }
+        viewModelScope.launch(ioDispatcher) {
+            val taskToDelete = taskRepository.getTaskById(taskId)
+            taskRepository.deleteTaskById(taskId)
             _state.update {
                 it.copy(
-                    tasks = it.tasks.filter { task -> task.taskId != taskId },
-                    deletedTask = taskToDelete,
+                    deletedTask = taskToDelete.toTask(),
                     isUndoShown = true
                 )
             }
         }
     }
 
+    fun TaskEntity.toTask() = Task(
+        taskId = id,
+        title = title,
+        description = description,
+        checked = isCompleted
+    )
+
+
     fun onUndoDeleteTask() {
-        viewModelScope.launch {
+        viewModelScope.launch(ioDispatcher) {
             val deletedTask = _state.value.deletedTask ?: return@launch
-            _state.update {
-                it.copy(tasks = it.tasks + deletedTask, deletedTask = null, isUndoShown = false)
-            }
+            taskRepository.insertTask(deletedTask.title, deletedTask.description)
         }
     }
 
